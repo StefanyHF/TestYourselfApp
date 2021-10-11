@@ -16,9 +16,9 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private var thirdAnswer: MaterialCardView? = null
     private var fourthAnswer: MaterialCardView? = null
 
-    lateinit var alternatives: Array <MaterialCardView?>
+    private lateinit var alternatives: Array <MaterialCardView?>
 
-    fun setSelectedOption(selectedIndex: Int) {
+    private fun setSelectedOption(selectedIndex: Int) {
         alternatives.forEachIndexed { index, _ ->
             if (selectedIndex == index) {
                 alternatives[selectedIndex]?.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.purple_200))
