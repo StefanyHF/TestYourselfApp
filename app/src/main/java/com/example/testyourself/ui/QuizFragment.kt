@@ -2,9 +2,7 @@ package com.example.testyourself.ui
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.testyourself.R
@@ -24,9 +22,15 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private var thirdAnswer: MaterialCardView? = null
     private var fourthAnswer: MaterialCardView? = null
     private var firstQuestion: MaterialTextView? = null
-
-
+    private lateinit var incorrectAnswers: Array<MaterialCardView>
+    private var correctAnswer: MaterialCardView? = null
     private lateinit var alternatives: Array<MaterialCardView?>
+    private var txtFirstAnswser: MaterialTextView? = null
+    private var txtSecondAnswser: MaterialTextView? = null
+    private var txtThirdAnswser: MaterialTextView? = null
+    private var txtFourthAnswser: MaterialTextView? = null
+    private lateinit var textAlternatives: Array<MaterialTextView>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,15 +60,19 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                 val result = Gson().fromJson(response.toString(), Response::class.java)
 
                 val question = result.results.first().question
+                val answer = result.results.first().correct_answer
+                val incorrectAnswer1 = result.results.first().incorrect_answers[0]
+                val incorrectAnswer2 = result.results.first().incorrect_answers[1]
+                val incorrectAnswer3 = result.results.first().incorrect_answers[2]
 
-                activity?.runOnUiThread{
+                activity?.runOnUiThread {
                     firstQuestion?.text = question
+                    txtSecondAnswser?.text = answer
+                    txtThirdAnswser?.text = incorrectAnswer1.toString()
+                    txtFourthAnswser?.text = incorrectAnswer2.toString()
+                    txtFirstAnswser?.text = incorrectAnswer3.toString()
 
                 }
-
-
-
-
             } catch (ex: Exception) {
 
             }
@@ -107,6 +115,10 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         thirdAnswer = view.findViewById(R.id.third_answer)
         fourthAnswer = view.findViewById(R.id.fourth_answer)
         firstQuestion = view.findViewById(R.id.txt_question)
+        txtFirstAnswser = view.findViewById(R.id.txt_first_answer)
+        txtSecondAnswser = view.findViewById(R.id.txt_second_answer)
+        txtThirdAnswser = view.findViewById(R.id.txt_third_answer)
+        txtFourthAnswser = view.findViewById(R.id.txt_fourth_answer)
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 
