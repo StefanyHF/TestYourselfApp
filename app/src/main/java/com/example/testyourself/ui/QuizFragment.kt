@@ -31,7 +31,6 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private var txtFourthAnswser: MaterialTextView? = null
     private lateinit var textAlternatives: Array<MaterialTextView>
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,9 +67,9 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                 activity?.runOnUiThread {
                     firstQuestion?.text = question
                     txtSecondAnswser?.text = answer
-                    txtThirdAnswser?.text = incorrectAnswer1.toString()
-                    txtFourthAnswser?.text = incorrectAnswer2.toString()
-                    txtFirstAnswser?.text = incorrectAnswer3.toString()
+                    txtThirdAnswser?.text = incorrectAnswer1
+                    txtFourthAnswser?.text = incorrectAnswer2
+                    txtFirstAnswser?.text = incorrectAnswer3
 
                 }
             } catch (ex: Exception) {
