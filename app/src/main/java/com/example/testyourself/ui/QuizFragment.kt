@@ -131,12 +131,14 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         txtThirdAnswser = view.findViewById(R.id.txt_third_answer)
         txtFourthAnswser = view.findViewById(R.id.txt_fourth_answer)
         btnContinue = view.findViewById(R.id.btn_continue)
+        btnContinue?.isEnabled = selectedIndex > 0
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 
 
         alternatives.forEachIndexed { index, materialCardView ->
             alternatives[index]?.setOnClickListener {
+                btnContinue?.isEnabled = true
                 setSelectedOption(index)
                 selectedIndex = index
             }
@@ -150,7 +152,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                             R.color.green
                         )
                     )
-                } else if (textAlternatives[index] != txtCorrectAnswer) {
+                } else if(textAlternatives[selectedIndex] != txtCorrectAnswer) {
                     alternatives[selectedIndex]?.setBackgroundColor(
                         ContextCompat.getColor(
                             requireContext(),
