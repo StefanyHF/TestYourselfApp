@@ -3,6 +3,7 @@ package com.example.testyourself.ui
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.testyourself.R
@@ -37,6 +38,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
     private var btnContinue: MaterialButton? = null
 
+    private var numberOfQuestions: MaterialTextView? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,6 +71,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                 txtCorrectAnswer = result.results.first().correct_answer
                 incorrectAnswers = result.results.first().incorrect_answers
 
+
                 activity?.runOnUiThread {
                     firstQuestion?.text = question
                     textAlternatives = arrayOf(
@@ -81,9 +85,11 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                     txtSecondAnswser?.text = textAlternatives[1]
                     txtThirdAnswser?.text = textAlternatives[2]
                     txtFourthAnswser?.text = textAlternatives[3]
+                    numberOfQuestions?.text = "1 / ${result.results.size}"
+
                 }
             } catch (ex: Exception) {
-
+                Toast.makeText(requireContext(), ex.localizedMessage, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -117,6 +123,11 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         }
     }
 
+    private fun setProgress(): Int{
+
+        return 0
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -132,6 +143,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         txtFourthAnswser = view.findViewById(R.id.txt_fourth_answer)
         btnContinue = view.findViewById(R.id.btn_continue)
         btnContinue?.isEnabled = selectedIndex > 0
+        numberOfQuestions = view.findViewById(R.id.txt_progress)
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 

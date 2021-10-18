@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:text="6/10"
+        tools:text="6/10"
         app:layout_constraintBottom_toBottomOf="@id/btn_close"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/btn_close" />
@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:progress="50"
+        android:progress="0"
         app:layout_constraintBottom_toBottomOf="@id/btn_close"
         app:layout_constraintEnd_toStartOf="@id/txt_progress"
         app:layout_constraintStart_toEndOf="@id/btn_close"
