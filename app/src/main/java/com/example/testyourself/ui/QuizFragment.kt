@@ -1,7 +1,8 @@
 package com.example.testyourself.ui
 
-import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Toast
@@ -24,7 +25,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var secondAnswer: MaterialCardView
     private lateinit var thirdAnswer: MaterialCardView
     private lateinit var fourthAnswer: MaterialCardView
-    private lateinit var firstQuestion: MaterialTextView
+    private lateinit var txtQuestion: MaterialTextView
     private lateinit var alternatives: Array<MaterialCardView?>
     private var selectedIndex: Int = -1
 
@@ -33,12 +34,15 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var txtThirdAnswser: MaterialTextView
     private lateinit var txtFourthAnswser: MaterialTextView
     private lateinit var textAlternatives: Array<String?>
+    private var currentQuestionIndex: Int = 0
 
     private lateinit var incorrectAnswers: List<String>
     private var txtCorrectAnswer: String? = null
     private var btnContinue: MaterialButton? = null
     private var numberOfQuestions: MaterialTextView? = null
 
+    private lateinit var result: Response
+    private lateinit var question: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,15 +69,14 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                     responseLine = bufferedReader.readLine()
                 }
                 Log.i("RESPONSE", response.toString())
-                val result = Gson().fromJson(response.toString(), Response::class.java)
-
-                val question = result.results.first().question
-                txtCorrectAnswer = result.results.first().correct_answer
-                incorrectAnswers = result.results.first().incorrect_answers
+                result = Gson().fromJson(response.toString(), Response::class.java)
+                question = result.results[currentQuestionIndex].question
+                txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
+                incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
 
 
                 activity?.runOnUiThread {
-                    firstQuestion?.text = question
+                    txtQuestion.text = question
                     textAlternatives = arrayOf(
                         txtCorrectAnswer,
                         incorrectAnswers[0],
@@ -81,10 +84,10 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                         incorrectAnswers[2]
                     )
                     textAlternatives.shuffle()
-                    txtFirstAnswser?.text = textAlternatives[0]
-                    txtSecondAnswser?.text = textAlternatives[1]
-                    txtThirdAnswser?.text = textAlternatives[2]
-                    txtFourthAnswser?.text = textAlternatives[3]
+                    txtFirstAnswser.text = textAlternatives[0]
+                    txtSecondAnswser.text = textAlternatives[1]
+                    txtThirdAnswser.text = textAlternatives[2]
+                    txtFourthAnswser.text = textAlternatives[3]
                     numberOfQuestions?.text = "1 / ${result.results.size}"
 
                 }
@@ -128,7 +131,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         secondAnswer = view.findViewById(R.id.second_answer)
         thirdAnswer = view.findViewById(R.id.third_answer)
         fourthAnswer = view.findViewById(R.id.fourth_answer)
-        firstQuestion = view.findViewById(R.id.txt_question)
+        txtQuestion = view.findViewById(R.id.txt_question)
         txtFirstAnswser = view.findViewById(R.id.txt_first_answer)
         txtSecondAnswser = view.findViewById(R.id.txt_second_answer)
         txtThirdAnswser = view.findViewById(R.id.txt_third_answer)
@@ -154,8 +157,37 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
                 } else if (textAlternatives[selectedIndex] != txtCorrectAnswer) {
                     setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
-
                 }
+                btnContinue?.isEnabled = false
+
+                Handler(Looper.myLooper()!!).postDelayed({
+                    if (currentQuestionIndex < result.results.size) {
+                        question = result.results[currentQuestionIndex].question
+                        txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
+                        incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
+                        currentQuestionIndex++
+
+                        txtQuestion.text = question
+                        textAlternatives = arrayOf(
+                            txtCorrectAnswer,
+                            incorrectAnswers[0],
+                            incorrectAnswers[1],
+                            incorrectAnswers[2]
+                        )
+                        textAlternatives.shuffle()
+                        txtFirstAnswser.text = textAlternatives[0]
+                        txtSecondAnswser.text = textAlternatives[1]
+                        txtThirdAnswser.text = textAlternatives[2]
+                        txtFourthAnswser.text = textAlternatives[3]
+                        numberOfQuestions?.text = "1 / ${result.results.size}"
+                        setCardProperties(firstAnswer, R.color.white,R.color.white,0)
+                        setCardProperties(secondAnswer, R.color.white,R.color.white,0)
+                        setCardProperties(thirdAnswer, R.color.white,R.color.white,0)
+                        setCardProperties(fourthAnswer, R.color.white,R.color.white,0)
+                        btnContinue?.isEnabled = true
+                    }
+
+                }, 1000)
             }
         }
     }
