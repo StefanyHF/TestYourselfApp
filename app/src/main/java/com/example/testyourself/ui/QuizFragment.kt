@@ -1,5 +1,6 @@
 package com.example.testyourself.ui
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -19,26 +20,25 @@ import kotlin.concurrent.thread
 
 class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
-    private var firstAnswer: MaterialCardView? = null
-    private var secondAnswer: MaterialCardView? = null
-    private var thirdAnswer: MaterialCardView? = null
-    private var fourthAnswer: MaterialCardView? = null
-    private var firstQuestion: MaterialTextView? = null
+    private lateinit var firstAnswer: MaterialCardView
+    private lateinit var secondAnswer: MaterialCardView
+    private lateinit var thirdAnswer: MaterialCardView
+    private lateinit var fourthAnswer: MaterialCardView
+    private lateinit var firstQuestion: MaterialTextView
     private lateinit var alternatives: Array<MaterialCardView?>
     private var selectedIndex: Int = -1
 
-    private var txtFirstAnswser: MaterialTextView? = null
-    private var txtSecondAnswser: MaterialTextView? = null
-    private var txtThirdAnswser: MaterialTextView? = null
-    private var txtFourthAnswser: MaterialTextView? = null
+    private lateinit var txtFirstAnswser: MaterialTextView
+    private lateinit var txtSecondAnswser: MaterialTextView
+    private lateinit var txtThirdAnswser: MaterialTextView
+    private lateinit var txtFourthAnswser: MaterialTextView
     private lateinit var textAlternatives: Array<String?>
 
     private lateinit var incorrectAnswers: List<String>
     private var txtCorrectAnswer: String? = null
-
     private var btnContinue: MaterialButton? = null
-
     private var numberOfQuestions: MaterialTextView? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,39 +95,31 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
     }
 
+    private fun setCardProperties(
+        card: MaterialCardView?,
+        background: Int,
+        stroke: Int,
+        strokeWidth: Int
+    ) {
+        card?.setBackgroundColor(ContextCompat.getColor(requireContext(), background))
+        card?.strokeColor = (ContextCompat.getColor(requireContext(), stroke))
+        card?.strokeWidth = strokeWidth
+    }
+
     private fun setSelectedOption(selectedIndex: Int) {
         alternatives.forEachIndexed { index, _ ->
             if (selectedIndex == index) {
-                alternatives[selectedIndex]?.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.purple_200
-                    )
+                setCardProperties(
+                    alternatives[selectedIndex],
+                    R.color.purple_200,
+                    R.color.purple_500,
+                    4
                 )
-                alternatives[selectedIndex]?.strokeColor =
-                    (ContextCompat.getColor(requireContext(), R.color.purple_500))
-                alternatives[selectedIndex]?.strokeWidth = 4
-
-
             } else {
-                alternatives[index]?.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        R.color.white
-                    )
-                )
-                alternatives[index]?.strokeColor =
-                    (ContextCompat.getColor(requireContext(), R.color.white))
-                alternatives[index]?.strokeWidth = 0
+                setCardProperties(alternatives[index], R.color.white, R.color.black, 0)
             }
         }
     }
-
-    private fun setProgress(): Int{
-
-        return 0
-    }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -158,19 +150,11 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         btnContinue?.setOnClickListener {
             textAlternatives.forEachIndexed { index, s ->
                 if (textAlternatives[index] == txtCorrectAnswer) {
-                    alternatives[index]?.setBackgroundColor(
-                        ContextCompat.getColor(
-                            requireContext(),
-                            R.color.green
-                        )
-                    )
-                } else if(textAlternatives[selectedIndex] != txtCorrectAnswer) {
-                    alternatives[selectedIndex]?.setBackgroundColor(
-                        ContextCompat.getColor(
-                            requireContext(),
-                            R.color.red
-                        )
-                    )
+                    setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
+
+                } else if (textAlternatives[selectedIndex] != txtCorrectAnswer) {
+                    setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
+
                 }
             }
         }
