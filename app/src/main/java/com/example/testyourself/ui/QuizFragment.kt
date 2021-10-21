@@ -39,10 +39,27 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var incorrectAnswers: List<String>
     private var txtCorrectAnswer: String? = null
     private var btnContinue: MaterialButton? = null
-    private var numberOfQuestions: MaterialTextView? = null
+    private var txtProgress: MaterialTextView? = null
 
     private lateinit var result: Response
     private lateinit var question: String
+    private lateinit var progress: com.google.android.material.progressindicator.LinearProgressIndicator
+
+
+    private fun setCardTexts() {
+        txtQuestion.text = question
+        textAlternatives = arrayOf(
+            txtCorrectAnswer,
+            incorrectAnswers[0],
+            incorrectAnswers[1],
+            incorrectAnswers[2]
+        )
+        textAlternatives.shuffle()
+        txtFirstAnswser.text = textAlternatives[0]
+        txtSecondAnswser.text = textAlternatives[1]
+        txtThirdAnswser.text = textAlternatives[2]
+        txtFourthAnswser.text = textAlternatives[3]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,22 +91,9 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                 txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
                 incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
 
-
                 activity?.runOnUiThread {
-                    txtQuestion.text = question
-                    textAlternatives = arrayOf(
-                        txtCorrectAnswer,
-                        incorrectAnswers[0],
-                        incorrectAnswers[1],
-                        incorrectAnswers[2]
-                    )
-                    textAlternatives.shuffle()
-                    txtFirstAnswser.text = textAlternatives[0]
-                    txtSecondAnswser.text = textAlternatives[1]
-                    txtThirdAnswser.text = textAlternatives[2]
-                    txtFourthAnswser.text = textAlternatives[3]
-                    numberOfQuestions?.text = "1 / ${result.results.size}"
-
+                    setCardTexts()
+                    setProgress(currentQuestionIndex)
                 }
             } catch (ex: Exception) {
                 Toast.makeText(requireContext(), ex.localizedMessage, Toast.LENGTH_SHORT).show()
@@ -107,6 +111,19 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         card?.setBackgroundColor(ContextCompat.getColor(requireContext(), background))
         card?.strokeColor = (ContextCompat.getColor(requireContext(), stroke))
         card?.strokeWidth = strokeWidth
+    }
+
+    private fun resetCardsProperties() {
+        setCardProperties(firstAnswer, R.color.white, R.color.white, 0)
+        setCardProperties(secondAnswer, R.color.white, R.color.white, 0)
+        setCardProperties(thirdAnswer, R.color.white, R.color.white, 0)
+        setCardProperties(fourthAnswer, R.color.white, R.color.white, 0)
+    }
+
+    private fun setProgress(questionIndex: Int) {
+        progress.progress = questionIndex
+        progress.max = result.results.size
+        txtProgress?.text = "${questionIndex}  / ${result.results.size}"
     }
 
     private fun setSelectedOption(selectedIndex: Int) {
@@ -138,7 +155,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         txtFourthAnswser = view.findViewById(R.id.txt_fourth_answer)
         btnContinue = view.findViewById(R.id.btn_continue)
         btnContinue?.isEnabled = selectedIndex > 0
-        numberOfQuestions = view.findViewById(R.id.txt_progress)
+        txtProgress = view.findViewById(R.id.txt_progress)
+        progress = view.findViewById(R.id.progress)
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 
@@ -151,44 +169,29 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
             }
         }
         btnContinue?.setOnClickListener {
+            setProgress(currentQuestionIndex)
             textAlternatives.forEachIndexed { index, s ->
                 if (textAlternatives[index] == txtCorrectAnswer) {
                     setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
-
                 } else if (textAlternatives[selectedIndex] != txtCorrectAnswer) {
                     setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
                 }
-                btnContinue?.isEnabled = false
-
-                Handler(Looper.myLooper()!!).postDelayed({
-                    if (currentQuestionIndex < result.results.size) {
-                        question = result.results[currentQuestionIndex].question
-                        txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
-                        incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
-                        currentQuestionIndex++
-
-                        txtQuestion.text = question
-                        textAlternatives = arrayOf(
-                            txtCorrectAnswer,
-                            incorrectAnswers[0],
-                            incorrectAnswers[1],
-                            incorrectAnswers[2]
-                        )
-                        textAlternatives.shuffle()
-                        txtFirstAnswser.text = textAlternatives[0]
-                        txtSecondAnswser.text = textAlternatives[1]
-                        txtThirdAnswser.text = textAlternatives[2]
-                        txtFourthAnswser.text = textAlternatives[3]
-                        numberOfQuestions?.text = "1 / ${result.results.size}"
-                        setCardProperties(firstAnswer, R.color.white,R.color.white,0)
-                        setCardProperties(secondAnswer, R.color.white,R.color.white,0)
-                        setCardProperties(thirdAnswer, R.color.white,R.color.white,0)
-                        setCardProperties(fourthAnswer, R.color.white,R.color.white,0)
-                        btnContinue?.isEnabled = true
-                    }
-
-                }, 1000)
             }
+
+            btnContinue?.isEnabled = false
+
+            Handler(Looper.myLooper()!!).postDelayed({
+                if (currentQuestionIndex < result.results.size) {
+                    question = result.results[currentQuestionIndex].question
+                    txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
+                    incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
+                    currentQuestionIndex++
+                    setCardTexts()
+                    resetCardsProperties()
+                    btnContinue?.isEnabled = true
+                }
+
+            }, 1000)
         }
     }
 }
