@@ -64,42 +64,62 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        thread {
-            val url =
-                URL("https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple")
-            val connection = url.openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.setRequestProperty("Content-Type", "application/json; utf-8")
-            connection.doOutput = true
+        if (savedInstanceState == null) {
+            thread {
+                val url =
+                    URL("https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("Content-Type", "application/json; utf-8")
+                connection.doOutput = true
 
-            connection.connect()
+                connection.connect()
 
-            try {
-                val bufferedReader =
-                    BufferedReader(InputStreamReader(connection.inputStream, "UTF-8"))
-                val response = StringBuilder()
+                try {
+                    val bufferedReader =
+                        BufferedReader(InputStreamReader(connection.inputStream, "UTF-8"))
+                    val response = StringBuilder()
 
-                var responseLine = bufferedReader.readLine()
+                    var responseLine = bufferedReader.readLine()
 
-                while (responseLine != null) {
-                    response.append(responseLine)
-                    responseLine = bufferedReader.readLine()
+                    while (responseLine != null) {
+                        response.append(responseLine)
+                        responseLine = bufferedReader.readLine()
+                    }
+                    Log.i("RESPONSE", response.toString())
+                    result = Gson().fromJson(response.toString(), Response::class.java)
+                    question = result.results[currentQuestionIndex].question
+                    txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
+                    incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
+
+                    activity?.runOnUiThread {
+                        setCardTexts()
+                        setProgress(currentQuestionIndex)
+                    }
+                } catch (ex: Exception) {
+                    Toast.makeText(requireContext(), ex.localizedMessage, Toast.LENGTH_SHORT).show()
                 }
-                Log.i("RESPONSE", response.toString())
-                result = Gson().fromJson(response.toString(), Response::class.java)
-                question = result.results[currentQuestionIndex].question
-                txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
-                incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
-
-                activity?.runOnUiThread {
-                    setCardTexts()
-                    setProgress(currentQuestionIndex)
-                }
-            } catch (ex: Exception) {
-                Toast.makeText(requireContext(), ex.localizedMessage, Toast.LENGTH_SHORT).show()
             }
+        } else {
+            val json = savedInstanceState.getString("firstState")
+            val gson = Gson()
+            val objt = gson.fromJson(json, Response::class.java)
+            result = objt
+            question = result.results[currentQuestionIndex].question
+            txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
+            incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
+            currentQuestionIndex = savedInstanceState.getInt("progressBar")
+            selectedIndex = savedInstanceState.getInt("selectedIndex")
         }
+    }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val gson = Gson()
+        val json = gson.toJson(result)
+        outState.putString("firstState", json)
+        outState.putInt("selectedIndex", selectedIndex)
+        outState.putInt("progressBar", currentQuestionIndex)
     }
 
     private fun setCardProperties(
@@ -193,6 +213,14 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
             }, 1000)
         }
+        if (savedInstanceState != null) {
+            setCardTexts()
+            setProgress(currentQuestionIndex)
+            setSelectedOption(selectedIndex)
+            setProgress(currentQuestionIndex)
+        }
     }
 }
+
+
 
