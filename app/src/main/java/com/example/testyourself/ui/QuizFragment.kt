@@ -101,15 +101,15 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                 }
             }
         } else {
-            val json = savedInstanceState.getString("firstState")
+            val json = savedInstanceState.getString(FIRST_QUESTION_KEY)
             val gson = Gson()
             val objt = gson.fromJson(json, Response::class.java)
             result = objt
             question = result.results[currentQuestionIndex].question
             txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
             incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
-            currentQuestionIndex = savedInstanceState.getInt("progressBar")
-            selectedIndex = savedInstanceState.getInt("selectedIndex")
+            currentQuestionIndex = savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY)
+            selectedIndex = savedInstanceState.getInt(SELECTED_INDEX_KEY)
         }
     }
 
@@ -117,16 +117,16 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         super.onSaveInstanceState(outState)
         val gson = Gson()
         val json = gson.toJson(result)
-        outState.putString("firstState", json)
-        outState.putInt("selectedIndex", selectedIndex)
-        outState.putInt("progressBar", currentQuestionIndex)
+        outState.putString(FIRST_QUESTION_KEY, json)
+        outState.putInt(SELECTED_INDEX_KEY, selectedIndex)
+        outState.putInt(CURRENT_QUESTION_INDEX_KEY, currentQuestionIndex)
     }
 
     private fun setCardProperties(
         card: MaterialCardView?,
-        background: Int,
-        stroke: Int,
-        strokeWidth: Int
+        background: Int = R.color.white,
+        stroke: Int = R.color.white,
+        strokeWidth: Int = 0
     ) {
         card?.setBackgroundColor(ContextCompat.getColor(requireContext(), background))
         card?.strokeColor = (ContextCompat.getColor(requireContext(), stroke))
@@ -134,10 +134,10 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     }
 
     private fun resetCardsProperties() {
-        setCardProperties(firstAnswer, R.color.white, R.color.white, 0)
-        setCardProperties(secondAnswer, R.color.white, R.color.white, 0)
-        setCardProperties(thirdAnswer, R.color.white, R.color.white, 0)
-        setCardProperties(fourthAnswer, R.color.white, R.color.white, 0)
+        setCardProperties(firstAnswer)
+        setCardProperties(secondAnswer)
+        setCardProperties(thirdAnswer)
+        setCardProperties(fourthAnswer)
     }
 
     private fun setProgress(questionIndex: Int) {
@@ -211,7 +211,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                     btnContinue?.isEnabled = true
                 }
 
-            }, 1000)
+            }, QUESTION_DELAY)
         }
         if (savedInstanceState != null) {
             setCardTexts()
@@ -219,6 +219,13 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
             setSelectedOption(selectedIndex)
             setProgress(currentQuestionIndex)
         }
+    }
+
+    companion object {
+        private const val SELECTED_INDEX_KEY = "selectedIndex"
+        private const val CURRENT_QUESTION_INDEX_KEY = "currentQuestionIndex"
+        private const val FIRST_QUESTION_KEY = "firstQuestion"
+        private const val QUESTION_DELAY = 1000L
     }
 }
 
