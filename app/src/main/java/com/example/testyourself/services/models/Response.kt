@@ -1,4 +1,4 @@
-package com.example.testyourself.ui
+package com.example.testyourself.services.models
 
 data class Response(
     val response_code: Int,

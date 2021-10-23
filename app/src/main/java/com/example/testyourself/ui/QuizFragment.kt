@@ -3,21 +3,16 @@ package com.example.testyourself.ui
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.testyourself.R
+import com.example.testyourself.services.QuizService
+import com.example.testyourself.services.models.Response
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textview.MaterialTextView
 import com.google.gson.Gson
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.net.HttpURLConnection
-import java.net.URL
-import kotlin.concurrent.thread
 
 class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
@@ -34,62 +29,29 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var txtThirdAnswser: MaterialTextView
     private lateinit var txtFourthAnswser: MaterialTextView
     private lateinit var textAlternatives: Array<String?>
-    private var currentQuestionIndex: Int = 0
+    var currentQuestionIndex: Int = 0
 
-    private lateinit var incorrectAnswers: List<String>
-    private var txtCorrectAnswer: String? = null
+    lateinit var incorrectAnswers: List<String>
+    var txtCorrectAnswer: String? = null
     private var btnContinue: MaterialButton? = null
     private var txtProgress: MaterialTextView? = null
 
-    private lateinit var result: Response
-    private lateinit var question: String
+    lateinit var result: Response
+    lateinit var question: String
     private lateinit var progress: com.google.android.material.progressindicator.LinearProgressIndicator
-    private lateinit var backendJson : String
+    lateinit var backendJson: String
 
+    private val quizService = QuizService(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            thread {
-                val url =
-                    URL("https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple")
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"
-                connection.setRequestProperty("Content-Type", "application/json; utf-8")
-                connection.doOutput = true
-
-                connection.connect()
-
-                try {
-                    val bufferedReader =
-                        BufferedReader(InputStreamReader(connection.inputStream, "UTF-8"))
-                    val response = StringBuilder()
-
-                    var responseLine = bufferedReader.readLine()
-
-                    while (responseLine != null) {
-                        response.append(responseLine)
-                        responseLine = bufferedReader.readLine()
-                    }
-                    Log.i("RESPONSE", response.toString())
-                    backendJson = response.toString()
-                    result = Gson().fromJson(backendJson, Response::class.java)
-                    question = result.results[currentQuestionIndex].question
-                    txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
-                    incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
-
-                    activity?.runOnUiThread {
-                        setCardTexts()
-                        setProgress(currentQuestionIndex)
-                    }
-                } catch (ex: Exception) {
-                    Toast.makeText(requireContext(), ex.localizedMessage, Toast.LENGTH_SHORT).show()
-                }
-            }
+            quizService.getQuiz()
         } else {
-            val json = savedInstanceState.getString(JSON)
+            val json: String? = savedInstanceState.getString(JSON)
             val objt = Gson().fromJson(json, Response::class.java)
+            backendJson = json!!
             result = objt
             question = result.results[currentQuestionIndex].question
             txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
@@ -106,7 +68,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         outState.putInt(CURRENT_QUESTION_INDEX_KEY, currentQuestionIndex)
     }
 
-    private fun setCardTexts() {
+    fun setCardTexts() {
         txtQuestion.text = question
         textAlternatives = arrayOf(
             txtCorrectAnswer,
@@ -139,7 +101,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         setCardProperties(fourthAnswer)
     }
 
-    private fun setProgress(questionIndex: Int) {
+    fun setProgress(questionIndex: Int) {
         progress.progress = questionIndex
         progress.max = result.results.size
         txtProgress?.text = "${questionIndex}  / ${result.results.size}"
@@ -160,7 +122,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         }
     }
 
-    private fun setAnswerBackground(){
+    private fun setAnswerBackground() {
         textAlternatives.forEachIndexed { index, s ->
             if (textAlternatives[index] == txtCorrectAnswer) {
                 setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
