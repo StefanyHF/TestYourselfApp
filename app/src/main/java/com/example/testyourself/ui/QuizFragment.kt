@@ -44,22 +44,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var result: Response
     private lateinit var question: String
     private lateinit var progress: com.google.android.material.progressindicator.LinearProgressIndicator
+    private lateinit var backendJson : String
 
-
-    private fun setCardTexts() {
-        txtQuestion.text = question
-        textAlternatives = arrayOf(
-            txtCorrectAnswer,
-            incorrectAnswers[0],
-            incorrectAnswers[1],
-            incorrectAnswers[2]
-        )
-        textAlternatives.shuffle()
-        txtFirstAnswser.text = textAlternatives[0]
-        txtSecondAnswser.text = textAlternatives[1]
-        txtThirdAnswser.text = textAlternatives[2]
-        txtFourthAnswser.text = textAlternatives[3]
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,7 +73,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                         responseLine = bufferedReader.readLine()
                     }
                     Log.i("RESPONSE", response.toString())
-                    result = Gson().fromJson(response.toString(), Response::class.java)
+                    backendJson = response.toString()
+                    result = Gson().fromJson(backendJson, Response::class.java)
                     question = result.results[currentQuestionIndex].question
                     txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
                     incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
@@ -101,9 +88,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                 }
             }
         } else {
-            val json = savedInstanceState.getString(FIRST_QUESTION_KEY)
-            val gson = Gson()
-            val objt = gson.fromJson(json, Response::class.java)
+            val json = savedInstanceState.getString(JSON)
+            val objt = Gson().fromJson(json, Response::class.java)
             result = objt
             question = result.results[currentQuestionIndex].question
             txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
@@ -115,11 +101,24 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        val gson = Gson()
-        val json = gson.toJson(result)
-        outState.putString(FIRST_QUESTION_KEY, json)
+        outState.putString(JSON, backendJson)
         outState.putInt(SELECTED_INDEX_KEY, selectedIndex)
         outState.putInt(CURRENT_QUESTION_INDEX_KEY, currentQuestionIndex)
+    }
+
+    private fun setCardTexts() {
+        txtQuestion.text = question
+        textAlternatives = arrayOf(
+            txtCorrectAnswer,
+            incorrectAnswers[0],
+            incorrectAnswers[1],
+            incorrectAnswers[2]
+        )
+        textAlternatives.shuffle()
+        txtFirstAnswser.text = textAlternatives[0]
+        txtSecondAnswser.text = textAlternatives[1]
+        txtThirdAnswser.text = textAlternatives[2]
+        txtFourthAnswser.text = textAlternatives[3]
     }
 
     private fun setCardProperties(
@@ -161,6 +160,16 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         }
     }
 
+    private fun setAnswerBackground(){
+        textAlternatives.forEachIndexed { index, s ->
+            if (textAlternatives[index] == txtCorrectAnswer) {
+                setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
+            } else if (textAlternatives[selectedIndex] != txtCorrectAnswer) {
+                setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -190,13 +199,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         }
         btnContinue?.setOnClickListener {
             setProgress(currentQuestionIndex)
-            textAlternatives.forEachIndexed { index, s ->
-                if (textAlternatives[index] == txtCorrectAnswer) {
-                    setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
-                } else if (textAlternatives[selectedIndex] != txtCorrectAnswer) {
-                    setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
-                }
-            }
+            setAnswerBackground()
 
             btnContinue?.isEnabled = false
 
@@ -224,7 +227,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     companion object {
         private const val SELECTED_INDEX_KEY = "selectedIndex"
         private const val CURRENT_QUESTION_INDEX_KEY = "currentQuestionIndex"
-        private const val FIRST_QUESTION_KEY = "firstQuestion"
+        private const val JSON = "json"
         private const val QUESTION_DELAY = 1000L
     }
 }
