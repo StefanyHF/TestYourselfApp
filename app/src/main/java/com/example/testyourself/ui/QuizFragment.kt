@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.testyourself.R
@@ -41,13 +42,13 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var progress: com.google.android.material.progressindicator.LinearProgressIndicator
     lateinit var backendJson: String
 
-    private val quizService = QuizService(this)
+    private val quizPresenter = QuizPresenter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState == null) {
-            quizService.getQuiz()
+            quizPresenter.getQuiz()
         } else {
             val json: String? = savedInstanceState.getString(JSON)
             val objt = Gson().fromJson(json, Response::class.java)
@@ -68,19 +69,26 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         outState.putInt(CURRENT_QUESTION_INDEX_KEY, currentQuestionIndex)
     }
 
-    fun setCardTexts() {
-        txtQuestion.text = question
-        textAlternatives = arrayOf(
-            txtCorrectAnswer,
-            incorrectAnswers[0],
-            incorrectAnswers[1],
-            incorrectAnswers[2]
-        )
-        textAlternatives.shuffle()
-        txtFirstAnswser.text = textAlternatives[0]
-        txtSecondAnswser.text = textAlternatives[1]
-        txtThirdAnswser.text = textAlternatives[2]
-        txtFourthAnswser.text = textAlternatives[3]
+    fun setQuestionTxt(txt: String) {
+        activity?.runOnUiThread { txtQuestion.text = txt }
+    }
+
+    fun setAnswers(first: String, second: String, third: String, fourth: String) {
+        activity?.runOnUiThread {
+            txtFirstAnswser.text = first
+            txtSecondAnswser.text = second
+            txtThirdAnswser.text = third
+            txtFourthAnswser.text = fourth
+        }
+    }
+
+    fun showError(error: String) {
+        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+    }
+
+    fun setProgressText(actual: Int, total: Int) {
+        activity?.run {
+            txtProgress?.text = "$actual/$total" }
     }
 
     private fun setCardProperties(
@@ -101,11 +109,6 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         setCardProperties(fourthAnswer)
     }
 
-    fun setProgress(questionIndex: Int) {
-        progress.progress = questionIndex
-        progress.max = result.results.size
-        txtProgress?.text = "${questionIndex}  / ${result.results.size}"
-    }
 
     private fun setSelectedOption(selectedIndex: Int) {
         alternatives.forEachIndexed { index, _ ->
@@ -160,7 +163,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
             }
         }
         btnContinue?.setOnClickListener {
-            setProgress(currentQuestionIndex)
+            //setProgress(currentQuestionIndex)
             setAnswerBackground()
 
             btnContinue?.isEnabled = false
@@ -171,7 +174,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                     txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
                     incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
                     currentQuestionIndex++
-                    setCardTexts()
+                    //setCardTexts()
                     resetCardsProperties()
                     btnContinue?.isEnabled = true
                 }
@@ -179,10 +182,10 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
             }, QUESTION_DELAY)
         }
         if (savedInstanceState != null) {
-            setCardTexts()
-            setProgress(currentQuestionIndex)
+            //setCardTexts()
+           // setProgress(currentQuestionIndex)
             setSelectedOption(selectedIndex)
-            setProgress(currentQuestionIndex)
+            //setProgress(currentQuestionIndex)
         }
     }
 
