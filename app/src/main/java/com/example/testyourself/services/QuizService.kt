@@ -16,7 +16,6 @@ class QuizService(
     private val quizPresenter: QuizPresenter
 ) {
 
-
     fun getQuiz() {
         thread {
             val url =

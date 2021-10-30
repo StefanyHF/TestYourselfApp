@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -41,6 +42,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     lateinit var question: String
     private lateinit var progress: com.google.android.material.progressindicator.LinearProgressIndicator
     lateinit var backendJson: String
+    lateinit var txtMaxProgress: String
+    lateinit var loadingSpinner: ProgressBar
 
     private val quizPresenter = QuizPresenter(this)
 
@@ -86,10 +89,53 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
     }
 
-    fun setProgressText(actual: Int, total: Int) {
-        activity?.run {
-            txtProgress?.text = "$actual/$total" }
+    fun setMaxProgress(max:Int){
+        txtMaxProgress = max.toString()
     }
+
+    fun setProgressText(actual: Int) {
+        activity?.run {
+            txtProgress?.text = "$actual/$txtMaxProgress" }
+    }
+
+    fun showLoading(){
+        loadingSpinner.visibility = View.VISIBLE
+    }
+
+    fun hideLoading(){
+        loadingSpinner.visibility = View.INVISIBLE
+    }
+
+    fun showViews(){
+        firstAnswer.visibility = View.VISIBLE
+        secondAnswer.visibility = View.VISIBLE
+        thirdAnswer.visibility = View.VISIBLE
+        fourthAnswer.visibility = View.VISIBLE
+        txtQuestion.visibility = View.VISIBLE
+        txtFirstAnswser.visibility = View.VISIBLE
+        txtSecondAnswser.visibility = View.VISIBLE
+        txtThirdAnswser.visibility = View.VISIBLE
+        txtFourthAnswser.visibility = View.VISIBLE
+        btnContinue?.visibility = View.VISIBLE
+        txtProgress?.visibility = View.VISIBLE
+        progress.visibility = View.VISIBLE
+    }
+
+    fun hideViews(){
+        firstAnswer.visibility = View.INVISIBLE
+        secondAnswer.visibility = View.INVISIBLE
+        thirdAnswer.visibility = View.INVISIBLE
+        fourthAnswer.visibility = View.INVISIBLE
+        txtQuestion.visibility = View.INVISIBLE
+        txtFirstAnswser.visibility = View.INVISIBLE
+        txtSecondAnswser.visibility = View.INVISIBLE
+        txtThirdAnswser.visibility = View.INVISIBLE
+        txtFourthAnswser.visibility = View.INVISIBLE
+        btnContinue?.visibility = View.INVISIBLE
+        txtProgress?.visibility = View.INVISIBLE
+        progress.visibility = View.INVISIBLE
+    }
+
 
     private fun setCardProperties(
         card: MaterialCardView?,
@@ -151,6 +197,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         btnContinue?.isEnabled = selectedIndex > 0
         txtProgress = view.findViewById(R.id.txt_progress)
         progress = view.findViewById(R.id.progress)
+        loadingSpinner = view.findViewById(R.id.loading)
+
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 
@@ -196,6 +244,17 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         private const val QUESTION_DELAY = 1000L
     }
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
