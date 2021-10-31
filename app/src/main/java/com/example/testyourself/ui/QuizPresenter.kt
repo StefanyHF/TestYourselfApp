@@ -19,13 +19,7 @@ class QuizPresenter(
 
     fun onSuccess(response: Response) {
         this.result = response
-        if(this.result == null){
-            quizFragment.hideViews()
-            quizFragment.showLoading()
-        }else{
-            quizFragment.showViews()
-            quizFragment.hideLoading()
-        }
+
         quizFragment.setQuestionTxt(result.results[currentQuestionIndex].question)
 
         textAlternatives = arrayOf(
@@ -43,11 +37,16 @@ class QuizPresenter(
         )
         quizFragment.setMaxProgress(result.results.size)
         quizFragment.setProgressText(currentQuestionIndex)
+
+        quizFragment.showViews()
+        quizFragment.hideLoading()
     }
 
     fun onFailure(message: String) {
         quizFragment.showError(message)
-
     }
 
+    fun onContinueClicked() {
+
+    }
 }

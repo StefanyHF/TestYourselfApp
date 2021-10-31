@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.testyourself.R
@@ -13,6 +15,8 @@ import com.example.testyourself.services.QuizService
 import com.example.testyourself.services.models.Response
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.android.material.textview.MaterialTextView
 import com.google.gson.Gson
 
@@ -25,6 +29,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var txtQuestion: MaterialTextView
     private lateinit var alternatives: Array<MaterialCardView?>
     private var selectedIndex: Int = -1
+
+    private lateinit var groupViews: Group
 
     private lateinit var txtFirstAnswser: MaterialTextView
     private lateinit var txtSecondAnswser: MaterialTextView
@@ -40,9 +46,8 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
     lateinit var result: Response
     lateinit var question: String
-    private lateinit var progress: com.google.android.material.progressindicator.LinearProgressIndicator
+    private lateinit var progress: LinearProgressIndicator
     lateinit var backendJson: String
-    lateinit var txtMaxProgress: String
     lateinit var loadingSpinner: ProgressBar
 
     private val quizPresenter = QuizPresenter(this)
@@ -86,42 +91,36 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     }
 
     fun showError(error: String) {
-        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+        //Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
     }
 
-    fun setMaxProgress(max:Int){
-        txtMaxProgress = max.toString()
+    fun setMaxProgress(max: Int) {
+        progress.max = max
     }
 
     fun setProgressText(actual: Int) {
-        activity?.run {
-            txtProgress?.text = "$actual/$txtMaxProgress" }
+        activity?.runOnUiThread {
+            txtProgress?.text = "$actual/${progress.max}"
+        }
     }
 
-    fun showLoading(){
+    fun showLoading() {
         loadingSpinner.visibility = View.VISIBLE
     }
 
-    fun hideLoading(){
-        loadingSpinner.visibility = View.INVISIBLE
+    fun hideLoading() {
+        activity?.runOnUiThread {
+            loadingSpinner.visibility = View.INVISIBLE
+        }
     }
 
-    fun showViews(){
-        firstAnswer.visibility = View.VISIBLE
-        secondAnswer.visibility = View.VISIBLE
-        thirdAnswer.visibility = View.VISIBLE
-        fourthAnswer.visibility = View.VISIBLE
-        txtQuestion.visibility = View.VISIBLE
-        txtFirstAnswser.visibility = View.VISIBLE
-        txtSecondAnswser.visibility = View.VISIBLE
-        txtThirdAnswser.visibility = View.VISIBLE
-        txtFourthAnswser.visibility = View.VISIBLE
-        btnContinue?.visibility = View.VISIBLE
-        txtProgress?.visibility = View.VISIBLE
-        progress.visibility = View.VISIBLE
+    fun showViews() {
+        activity?.runOnUiThread {
+            groupViews.visibility = View.VISIBLE
+        }
     }
 
-    fun hideViews(){
+    fun hideViews() {
         firstAnswer.visibility = View.INVISIBLE
         secondAnswer.visibility = View.INVISIBLE
         thirdAnswer.visibility = View.INVISIBLE
@@ -135,7 +134,6 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         txtProgress?.visibility = View.INVISIBLE
         progress.visibility = View.INVISIBLE
     }
-
 
     private fun setCardProperties(
         card: MaterialCardView?,
@@ -171,6 +169,14 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         }
     }
 
+    fun enableContinueButton() {
+        btnContinue?.isEnabled = true
+    }
+
+    fun disableContinueButton() {
+        btnContinue?.isEnabled = false
+    }
+
     private fun setAnswerBackground() {
         textAlternatives.forEachIndexed { index, s ->
             if (textAlternatives[index] == txtCorrectAnswer) {
@@ -198,7 +204,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         txtProgress = view.findViewById(R.id.txt_progress)
         progress = view.findViewById(R.id.progress)
         loadingSpinner = view.findViewById(R.id.loading)
-
+        groupViews = view.findViewById(R.id.group_views)
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 
@@ -210,11 +216,14 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                 selectedIndex = index
             }
         }
-        btnContinue?.setOnClickListener {
-            //setProgress(currentQuestionIndex)
-            setAnswerBackground()
 
-            btnContinue?.isEnabled = false
+        btnContinue?.setOnClickListener {
+            quizPresenter.onContinueClicked()
+
+            //setProgress(currentQuestionIndex)
+            // setAnswerBackground()
+
+            /*btnContinue?.isEnabled = false
 
             Handler(Looper.myLooper()!!).postDelayed({
                 if (currentQuestionIndex < result.results.size) {
@@ -227,11 +236,11 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
                     btnContinue?.isEnabled = true
                 }
 
-            }, QUESTION_DELAY)
+            }, QUESTION_DELAY)*/
         }
         if (savedInstanceState != null) {
             //setCardTexts()
-           // setProgress(currentQuestionIndex)
+            // setProgress(currentQuestionIndex)
             setSelectedOption(selectedIndex)
             //setProgress(currentQuestionIndex)
         }
