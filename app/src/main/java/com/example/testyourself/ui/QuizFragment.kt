@@ -38,7 +38,6 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var txtFourthAnswser: MaterialTextView
 
     lateinit var incorrectAnswers: List<String>
-    var txtCorrectAnswer: String? = null
     private var btnContinue: MaterialButton? = null
     private var txtProgress: MaterialTextView? = null
 
@@ -61,7 +60,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
             backendJson = json!!
             result = objt
             question = result.results[quizPresenter.currentQuestionIndex].question
-            txtCorrectAnswer = result.results[quizPresenter.currentQuestionIndex].correct_answer
+            quizPresenter.correctAnswer = result.results[quizPresenter.currentQuestionIndex].correct_answer
             incorrectAnswers = result.results[quizPresenter.currentQuestionIndex].incorrect_answers
             quizPresenter.currentQuestionIndex = savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY)
             selectedIndex = savedInstanceState.getInt(SELECTED_INDEX_KEY)
@@ -119,18 +118,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     }
 
     fun hideViews() {
-        firstAnswer.visibility = View.INVISIBLE
-        secondAnswer.visibility = View.INVISIBLE
-        thirdAnswer.visibility = View.INVISIBLE
-        fourthAnswer.visibility = View.INVISIBLE
-        txtQuestion.visibility = View.INVISIBLE
-        txtFirstAnswser.visibility = View.INVISIBLE
-        txtSecondAnswser.visibility = View.INVISIBLE
-        txtThirdAnswser.visibility = View.INVISIBLE
-        txtFourthAnswser.visibility = View.INVISIBLE
-        btnContinue?.visibility = View.INVISIBLE
-        txtProgress?.visibility = View.INVISIBLE
-        progress.visibility = View.INVISIBLE
+        groupViews.visibility = View.INVISIBLE
     }
 
     private fun setCardProperties(
@@ -178,9 +166,9 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     fun setAnswerBackground() {
         activity?.runOnUiThread {
             quizPresenter.textAlternatives.forEachIndexed { index, s ->
-                if (quizPresenter.textAlternatives[index] == txtCorrectAnswer) {
+                if (quizPresenter.textAlternatives[index] == quizPresenter.correctAnswer) {
                     setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
-                } else if (quizPresenter.textAlternatives[selectedIndex] != txtCorrectAnswer) {
+                } else if (quizPresenter.textAlternatives[selectedIndex] != quizPresenter.correctAnswer) {
                     setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
                 }
             }

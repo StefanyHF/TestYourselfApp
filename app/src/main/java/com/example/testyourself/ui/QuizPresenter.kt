@@ -11,7 +11,9 @@ class QuizPresenter(
 
     lateinit var result: Response
     var currentQuestionIndex: Int = 0
+    lateinit var correctAnswer: String
     lateinit var textAlternatives: Array<String?>
+
 
     private val quizService = QuizService(this)
 
@@ -23,9 +25,10 @@ class QuizPresenter(
         this.result = response
 
         quizFragment.setQuestionTxt(result.results[currentQuestionIndex].question)
+        correctAnswer = result.results[currentQuestionIndex].correct_answer
 
         textAlternatives = arrayOf(
-            result.results[currentQuestionIndex].correct_answer,
+            correctAnswer,
             result.results[currentQuestionIndex].incorrect_answers[0],
             result.results[currentQuestionIndex].incorrect_answers[1],
             result.results[currentQuestionIndex].incorrect_answers[2]
