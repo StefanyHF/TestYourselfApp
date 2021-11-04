@@ -36,8 +36,6 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var txtSecondAnswser: MaterialTextView
     private lateinit var txtThirdAnswser: MaterialTextView
     private lateinit var txtFourthAnswser: MaterialTextView
-    private lateinit var textAlternatives: Array<String?>
-    var currentQuestionIndex: Int = 0
 
     lateinit var incorrectAnswers: List<String>
     var txtCorrectAnswer: String? = null
@@ -62,10 +60,10 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
             val objt = Gson().fromJson(json, Response::class.java)
             backendJson = json!!
             result = objt
-            question = result.results[currentQuestionIndex].question
-            txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
-            incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
-            currentQuestionIndex = savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY)
+            question = result.results[quizPresenter.currentQuestionIndex].question
+            txtCorrectAnswer = result.results[quizPresenter.currentQuestionIndex].correct_answer
+            incorrectAnswers = result.results[quizPresenter.currentQuestionIndex].incorrect_answers
+            quizPresenter.currentQuestionIndex = savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY)
             selectedIndex = savedInstanceState.getInt(SELECTED_INDEX_KEY)
         }
     }
@@ -74,7 +72,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         super.onSaveInstanceState(outState)
         outState.putString(JSON, backendJson)
         outState.putInt(SELECTED_INDEX_KEY, selectedIndex)
-        outState.putInt(CURRENT_QUESTION_INDEX_KEY, currentQuestionIndex)
+        outState.putInt(CURRENT_QUESTION_INDEX_KEY, quizPresenter.currentQuestionIndex)
     }
 
     fun setQuestionTxt(txt: String) {
@@ -146,7 +144,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         card?.strokeWidth = strokeWidth
     }
 
-    private fun resetCardsProperties() {
+    fun resetCardsProperties() {
         setCardProperties(firstAnswer)
         setCardProperties(secondAnswer)
         setCardProperties(thirdAnswer)
@@ -177,12 +175,14 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         btnContinue?.isEnabled = false
     }
 
-    private fun setAnswerBackground() {
-        textAlternatives.forEachIndexed { index, s ->
-            if (textAlternatives[index] == txtCorrectAnswer) {
-                setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
-            } else if (textAlternatives[selectedIndex] != txtCorrectAnswer) {
-                setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
+    fun setAnswerBackground() {
+        activity?.runOnUiThread {
+            quizPresenter.textAlternatives.forEachIndexed { index, s ->
+                if (quizPresenter.textAlternatives[index] == txtCorrectAnswer) {
+                    setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
+                } else if (quizPresenter.textAlternatives[selectedIndex] != txtCorrectAnswer) {
+                    setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
+                }
             }
         }
     }
@@ -218,26 +218,9 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         }
 
         btnContinue?.setOnClickListener {
-            quizPresenter.onContinueClicked()
-
-            //setProgress(currentQuestionIndex)
-            // setAnswerBackground()
-
-            /*btnContinue?.isEnabled = false
-
-            Handler(Looper.myLooper()!!).postDelayed({
-                if (currentQuestionIndex < result.results.size) {
-                    question = result.results[currentQuestionIndex].question
-                    txtCorrectAnswer = result.results[currentQuestionIndex].correct_answer
-                    incorrectAnswers = result.results[currentQuestionIndex].incorrect_answers
-                    currentQuestionIndex++
-                    //setCardTexts()
-                    resetCardsProperties()
-                    btnContinue?.isEnabled = true
-                }
-
-            }, QUESTION_DELAY)*/
+            quizPresenter.setBtnContinueClick()
         }
+
         if (savedInstanceState != null) {
             //setCardTexts()
             // setProgress(currentQuestionIndex)

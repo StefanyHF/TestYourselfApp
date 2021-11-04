@@ -1,5 +1,7 @@
 package com.example.testyourself.ui
 
+import android.os.Handler
+import android.os.Looper
 import com.example.testyourself.services.QuizService
 import com.example.testyourself.services.models.Response
 
@@ -9,7 +11,7 @@ class QuizPresenter(
 
     lateinit var result: Response
     var currentQuestionIndex: Int = 0
-    private lateinit var textAlternatives: Array<String?>
+    lateinit var textAlternatives: Array<String?>
 
     private val quizService = QuizService(this)
 
@@ -46,7 +48,20 @@ class QuizPresenter(
         quizFragment.showError(message)
     }
 
-    fun onContinueClicked() {
+    fun setBtnContinueClick() {
+        quizFragment.setProgressText(currentQuestionIndex)
+        quizFragment.setAnswerBackground()
+        quizFragment.disableContinueButton()
 
+        Handler(Looper.myLooper()!!).postDelayed({
+            if (currentQuestionIndex < result.results.size) {
+                currentQuestionIndex++
+                quizFragment.setQuestionTxt(result.results[currentQuestionIndex].question)
+                quizFragment.setAnswers(result.results[currentQuestionIndex].correct_answer, result.results[currentQuestionIndex].incorrect_answers[0],result.results[currentQuestionIndex].incorrect_answers[1],result.results[currentQuestionIndex].incorrect_answers[2] )
+                quizFragment.resetCardsProperties()
+                quizFragment.enableContinueButton()
+            }
+        }, 1000)
     }
+
 }
