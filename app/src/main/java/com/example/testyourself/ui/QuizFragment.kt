@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.constraintlayout.widget.Group
+import androidx.core.content.ContentProviderCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.testyourself.R
@@ -22,14 +23,12 @@ import com.google.gson.Gson
 
 class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
-    private lateinit var firstAnswer: MaterialCardView
-    private lateinit var secondAnswer: MaterialCardView
-    private lateinit var thirdAnswer: MaterialCardView
-    private lateinit var fourthAnswer: MaterialCardView
+    lateinit var firstAnswer: MaterialCardView
+    lateinit var secondAnswer: MaterialCardView
+    lateinit var thirdAnswer: MaterialCardView
+    lateinit var fourthAnswer: MaterialCardView
     private lateinit var txtQuestion: MaterialTextView
-    private lateinit var alternatives: Array<MaterialCardView?>
-    private var selectedIndex: Int = -1
-
+    lateinit var alternatives: Array<MaterialCardView?>
     private lateinit var groupViews: Group
 
     private lateinit var txtFirstAnswser: MaterialTextView
@@ -38,7 +37,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var txtFourthAnswser: MaterialTextView
 
     lateinit var incorrectAnswers: List<String>
-    private var btnContinue: MaterialButton? = null
+    var btnContinue: MaterialButton? = null
     private var txtProgress: MaterialTextView? = null
 
     lateinit var result: Response
@@ -60,17 +59,19 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
             backendJson = json!!
             result = objt
             question = result.results[quizPresenter.currentQuestionIndex].question
-            quizPresenter.correctAnswer = result.results[quizPresenter.currentQuestionIndex].correct_answer
+            quizPresenter.correctAnswer =
+                result.results[quizPresenter.currentQuestionIndex].correct_answer
             incorrectAnswers = result.results[quizPresenter.currentQuestionIndex].incorrect_answers
-            quizPresenter.currentQuestionIndex = savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY)
-            selectedIndex = savedInstanceState.getInt(SELECTED_INDEX_KEY)
+            quizPresenter.currentQuestionIndex =
+                savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY)
+            quizPresenter.selectedIndex = savedInstanceState.getInt(SELECTED_INDEX_KEY)
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(JSON, backendJson)
-        outState.putInt(SELECTED_INDEX_KEY, selectedIndex)
+        outState.putInt(SELECTED_INDEX_KEY, quizPresenter.selectedIndex)
         outState.putInt(CURRENT_QUESTION_INDEX_KEY, quizPresenter.currentQuestionIndex)
     }
 
@@ -121,7 +122,15 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         groupViews.visibility = View.INVISIBLE
     }
 
-    private fun setCardProperties(
+    fun enableContinueButton() {
+        btnContinue?.isEnabled = true
+    }
+
+    fun disableContinueButton() {
+        btnContinue?.isEnabled = false
+    }
+
+    fun setCardProperties(
         card: MaterialCardView?,
         background: Int = R.color.white,
         stroke: Int = R.color.white,
@@ -132,48 +141,6 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         card?.strokeWidth = strokeWidth
     }
 
-    fun resetCardsProperties() {
-        setCardProperties(firstAnswer)
-        setCardProperties(secondAnswer)
-        setCardProperties(thirdAnswer)
-        setCardProperties(fourthAnswer)
-    }
-
-
-    private fun setSelectedOption(selectedIndex: Int) {
-        alternatives.forEachIndexed { index, _ ->
-            if (selectedIndex == index) {
-                setCardProperties(
-                    alternatives[selectedIndex],
-                    R.color.purple_200,
-                    R.color.purple_500,
-                    4
-                )
-            } else {
-                setCardProperties(alternatives[index], R.color.white, R.color.black, 0)
-            }
-        }
-    }
-
-    fun enableContinueButton() {
-        btnContinue?.isEnabled = true
-    }
-
-    fun disableContinueButton() {
-        btnContinue?.isEnabled = false
-    }
-
-    fun setAnswerBackground() {
-        activity?.runOnUiThread {
-            quizPresenter.textAlternatives.forEachIndexed { index, s ->
-                if (quizPresenter.textAlternatives[index] == quizPresenter.correctAnswer) {
-                    setCardProperties(alternatives[index], R.color.green, R.color.green, 0)
-                } else if (quizPresenter.textAlternatives[selectedIndex] != quizPresenter.correctAnswer) {
-                    setCardProperties(alternatives[selectedIndex], R.color.red, R.color.red, 0)
-                }
-            }
-        }
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -188,7 +155,6 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         txtThirdAnswser = view.findViewById(R.id.txt_third_answer)
         txtFourthAnswser = view.findViewById(R.id.txt_fourth_answer)
         btnContinue = view.findViewById(R.id.btn_continue)
-        btnContinue?.isEnabled = selectedIndex > 0
         txtProgress = view.findViewById(R.id.txt_progress)
         progress = view.findViewById(R.id.progress)
         loadingSpinner = view.findViewById(R.id.loading)
@@ -196,14 +162,12 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 
-
         alternatives.forEachIndexed { index, materialCardView ->
             alternatives[index]?.setOnClickListener {
-                btnContinue?.isEnabled = true
-                setSelectedOption(index)
-                selectedIndex = index
+               quizPresenter.setSelectedOption(index)
             }
         }
+
 
         btnContinue?.setOnClickListener {
             quizPresenter.setBtnContinueClick()
@@ -212,7 +176,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         if (savedInstanceState != null) {
             //setCardTexts()
             // setProgress(currentQuestionIndex)
-            setSelectedOption(selectedIndex)
+            quizPresenter.setSelectedOption(quizPresenter.selectedIndex)
             //setProgress(currentQuestionIndex)
         }
     }
