@@ -41,27 +41,8 @@ class QuizService(
                 Log.i("RESPONSE", response.toString())
                 val result = Gson().fromJson(response.toString(), Response::class.java)
                 quizPresenter.onSuccess(result)
-                /*quizFragment.backendJson = response.toString()
-                quizFragment.result =
-                    Gson().fromJson(quizFragment.backendJson, Response::class.java)
-                quizFragment.question =
-                    quizFragment.result.results[quizFragment.currentQuestionIndex].question
-                quizFragment.txtCorrectAnswer =
-                    quizFragment.result.results[quizFragment.currentQuestionIndex].correct_answer
-                quizFragment.incorrectAnswers =
-                    quizFragment.result.results[quizFragment.currentQuestionIndex].incorrect_answers
-
-                quizFragment.activity?.runOnUiThread {
-                    quizFragment.setCardTexts()
-                    quizFragment.setProgress(quizFragment.currentQuestionIndex)
-                }*/
             } catch (ex: Exception) {
                 quizPresenter.onFailure(ex.localizedMessage.orEmpty())
-                /*Toast.makeText(
-                    quizFragment.requireContext(),
-                    ex.localizedMessage,
-                    Toast.LENGTH_SHORT
-                ).show()*/
             }
         }
     }

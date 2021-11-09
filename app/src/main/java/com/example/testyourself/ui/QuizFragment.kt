@@ -23,12 +23,12 @@ import com.google.gson.Gson
 
 class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
-    lateinit var firstAnswer: MaterialCardView
-    lateinit var secondAnswer: MaterialCardView
-    lateinit var thirdAnswer: MaterialCardView
-    lateinit var fourthAnswer: MaterialCardView
+    private lateinit var firstAnswer: MaterialCardView
+    private lateinit var secondAnswer: MaterialCardView
+    private lateinit var thirdAnswer: MaterialCardView
+    private lateinit var fourthAnswer: MaterialCardView
     private lateinit var txtQuestion: MaterialTextView
-    lateinit var alternatives: Array<MaterialCardView?>
+    private lateinit var alternatives: Array<MaterialCardView?>
     private lateinit var groupViews: Group
 
     private lateinit var txtFirstAnswser: MaterialTextView
@@ -36,15 +36,11 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var txtThirdAnswser: MaterialTextView
     private lateinit var txtFourthAnswser: MaterialTextView
 
-    lateinit var incorrectAnswers: List<String>
-    var btnContinue: MaterialButton? = null
+    private var btnContinue: MaterialButton? = null
     private var txtProgress: MaterialTextView? = null
 
-    lateinit var result: Response
-    lateinit var question: String
     private lateinit var progress: LinearProgressIndicator
-    lateinit var backendJson: String
-    lateinit var loadingSpinner: ProgressBar
+    private lateinit var loadingSpinner: ProgressBar
 
     private val quizPresenter = QuizPresenter(this)
 
@@ -53,26 +49,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
         if (savedInstanceState == null) {
             quizPresenter.getQuiz()
-        } else {
-            val json: String? = savedInstanceState.getString(JSON)
-            val objt = Gson().fromJson(json, Response::class.java)
-            backendJson = json!!
-            result = objt
-            question = result.results[quizPresenter.currentQuestionIndex].question
-            quizPresenter.correctAnswer =
-                result.results[quizPresenter.currentQuestionIndex].correct_answer
-            incorrectAnswers = result.results[quizPresenter.currentQuestionIndex].incorrect_answers
-            quizPresenter.currentQuestionIndex =
-                savedInstanceState.getInt(CURRENT_QUESTION_INDEX_KEY)
-            quizPresenter.selectedIndex = savedInstanceState.getInt(SELECTED_INDEX_KEY)
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putString(JSON, backendJson)
-        outState.putInt(SELECTED_INDEX_KEY, quizPresenter.selectedIndex)
-        outState.putInt(CURRENT_QUESTION_INDEX_KEY, quizPresenter.currentQuestionIndex)
     }
 
     fun setQuestionTxt(txt: String) {
@@ -130,17 +107,27 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
         btnContinue?.isEnabled = false
     }
 
-    fun setCardProperties(
-        card: MaterialCardView?,
+    fun resetCardsProperties() {
+        alternatives.forEachIndexed { index, _ ->
+            setCardPropertiesByIndex(index)
+        }
+    }
+
+    fun setCardPropertiesByIndex(
+        index: Int,
         background: Int = R.color.white,
         stroke: Int = R.color.white,
         strokeWidth: Int = 0
     ) {
-        card?.setBackgroundColor(ContextCompat.getColor(requireContext(), background))
-        card?.strokeColor = (ContextCompat.getColor(requireContext(), stroke))
-        card?.strokeWidth = strokeWidth
+        alternatives[index]?.setBackgroundColor(
+            ContextCompat.getColor(
+                requireContext(),
+                background
+            )
+        )
+        alternatives[index]?.strokeColor = (ContextCompat.getColor(requireContext(), stroke))
+        alternatives[index]?.strokeWidth = strokeWidth
     }
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -162,30 +149,15 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
 
         alternatives = arrayOf(firstAnswer, secondAnswer, thirdAnswer, fourthAnswer)
 
-        alternatives.forEachIndexed { index, materialCardView ->
+        alternatives.forEachIndexed { index, _ ->
             alternatives[index]?.setOnClickListener {
-               quizPresenter.setSelectedOption(index)
+                quizPresenter.setSelectedOption(index)
             }
         }
-
 
         btnContinue?.setOnClickListener {
             quizPresenter.setBtnContinueClick()
         }
-
-        if (savedInstanceState != null) {
-            //setCardTexts()
-            // setProgress(currentQuestionIndex)
-            quizPresenter.setSelectedOption(quizPresenter.selectedIndex)
-            //setProgress(currentQuestionIndex)
-        }
-    }
-
-    companion object {
-        private const val SELECTED_INDEX_KEY = "selectedIndex"
-        private const val CURRENT_QUESTION_INDEX_KEY = "currentQuestionIndex"
-        private const val JSON = "json"
-        private const val QUESTION_DELAY = 1000L
     }
 }
 
