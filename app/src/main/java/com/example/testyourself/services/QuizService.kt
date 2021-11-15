@@ -12,11 +12,12 @@ import java.net.HttpURLConnection
 import java.net.URL
 import kotlin.concurrent.thread
 
-class QuizService(
-    private val quizPresenter: QuizPresenter
-) {
+class QuizService() {
 
-    fun getQuiz() {
+    fun getQuiz(
+        onSuccess: (Response) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         thread {
             val url =
                 URL("https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple")
@@ -40,9 +41,9 @@ class QuizService(
                 }
                 Log.i("RESPONSE", response.toString())
                 val result = Gson().fromJson(response.toString(), Response::class.java)
-                quizPresenter.onSuccess(result)
+                onSuccess(result)
             } catch (ex: Exception) {
-                quizPresenter.onFailure(ex.localizedMessage.orEmpty())
+                onFailure(ex.localizedMessage.orEmpty())
             }
         }
     }

@@ -7,7 +7,8 @@ import com.example.testyourself.services.QuizService
 import com.example.testyourself.services.models.Response
 
 class QuizPresenter(
-    private val quizFragment: QuizFragment
+    private val quizFragment: QuizFragment,
+    private val quizService: QuizService
 ) {
     private lateinit var result: Response
     private var currentQuestionIndex: Int = 0
@@ -15,42 +16,38 @@ class QuizPresenter(
     private lateinit var textAlternatives: Array<String?>
     private var selectedIndex: Int = -1
 
-    private val quizService = QuizService(this)
-
     fun getQuiz() {
-        quizService.getQuiz()
-    }
+        quizService.getQuiz(onSuccess = { response ->
+            this.result = response
 
-    fun onSuccess(response: Response) {
-        this.result = response
+            quizFragment.setQuestionTxt(result.results[currentQuestionIndex].question)
+            correctAnswer = result.results[currentQuestionIndex].correct_answer
 
-        quizFragment.setQuestionTxt(result.results[currentQuestionIndex].question)
-        correctAnswer = result.results[currentQuestionIndex].correct_answer
+            textAlternatives = arrayOf(
+                correctAnswer,
+                result.results[currentQuestionIndex].incorrect_answers[0],
+                result.results[currentQuestionIndex].incorrect_answers[1],
+                result.results[currentQuestionIndex].incorrect_answers[2]
+            )
 
-        textAlternatives = arrayOf(
-            correctAnswer,
-            result.results[currentQuestionIndex].incorrect_answers[0],
-            result.results[currentQuestionIndex].incorrect_answers[1],
-            result.results[currentQuestionIndex].incorrect_answers[2]
-        )
+            textAlternatives.shuffle()
 
-        textAlternatives.shuffle()
+            quizFragment.setAnswers(
+                textAlternatives[0].orEmpty(),
+                textAlternatives[1].orEmpty(),
+                textAlternatives[2].orEmpty(),
+                textAlternatives[3].orEmpty()
+            )
+            quizFragment.setMaxProgress(result.results.size)
+            quizFragment.setProgressText(currentQuestionIndex)
 
-        quizFragment.setAnswers(
-            textAlternatives[0].orEmpty(),
-            textAlternatives[1].orEmpty(),
-            textAlternatives[2].orEmpty(),
-            textAlternatives[3].orEmpty()
-        )
-        quizFragment.setMaxProgress(result.results.size)
-        quizFragment.setProgressText(currentQuestionIndex)
+            quizFragment.showViews()
+            quizFragment.hideLoading()
 
-        quizFragment.showViews()
-        quizFragment.hideLoading()
-    }
+        }, onFailure = { message ->
+            quizFragment.showError(message)
 
-    fun onFailure(message: String) {
-        quizFragment.showError(message)
+        })
     }
 
     fun setBtnContinueClick() {

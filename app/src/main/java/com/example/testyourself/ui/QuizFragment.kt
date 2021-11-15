@@ -42,7 +42,7 @@ class QuizFragment : Fragment(R.layout.fragment_quiz) {
     private lateinit var progress: LinearProgressIndicator
     private lateinit var loadingSpinner: ProgressBar
 
-    private val quizPresenter = QuizPresenter(this)
+    private val quizPresenter = QuizPresenter( this, QuizService())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
